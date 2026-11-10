@@ -1,0 +1,22 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
+node_modules/
+dist/
+
+# Backend
+target/
+*.class
+*.jar
+
+# IDE files
+.idea/
+*.iml
+
+# Operating system
+.DS_Store
+Thumbs.db
