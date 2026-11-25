@@ -37,6 +37,7 @@ const emptyForm = {
   title: '',
   type: 'TASK',
   status: 'OPEN',
+  importance: 'MEDIUM',
   ownerName: '',
   details: '',
   decisionReason: ''
@@ -213,15 +214,24 @@ export default function App() {
   }
 
   // Load knowledge records after login
-  async function loadItems() {
-    try {
-      const data = await request('/items');
-      setItems(Array.isArray(data) ? data : []);
-      setError('');
-    } catch (e) {
-      setError('Unable to load records: ' + e.message);
-    }
+
+async function loadItems(search = '') {
+  try {
+    const query = search.trim();
+
+    const path = query
+      ? `/items?search=${encodeURIComponent(query)}`
+      : '/items';
+
+    const data = await request(path);
+
+    setItems(Array.isArray(data) ? data : []);
+    setError('');
+  } catch (e) {
+    setError('Unable to load records: ' + e.message);
   }
+}
+
 
   useEffect(() => {
     if (auth?.token) {
@@ -1451,6 +1461,22 @@ export default function App() {
               </div>
 
               <label>
+                Importance <em>*</em>
+
+                <select
+                  required
+                  value={form.importance}
+                  onChange={e =>
+                    updateForm('importance', e.target.value)
+                  }
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                </select>
+              </label>
+
+              <label>
                 Owner <em>*</em>
 
                 <input
@@ -1642,32 +1668,36 @@ export default function App() {
 
           </div>
 
-          {items.length > 0 && (
-            <div className="record-search">
-              <Search size={17} />
+<div className="record-search">
+  <Search size={17} />
 
-              <input
-                type="search"
-                value={recordSearch}
-                onChange={e => setRecordSearch(e.target.value)}
-                placeholder="Search records, owners or status..."
-                aria-label="Search knowledge records"
-              />
-            </div>
-          )}
+  <input
+    type="search"
+    value={recordSearch}
+    onChange={e => {
+      const value = e.target.value;
+      setRecordSearch(value);
+      loadItems(value);
+    }}
+    placeholder="Search records, owners or status..."
+    aria-label="Search knowledge records"
+  />
+</div>
 
           {filteredItems.length ? (
             <div className="table-scroll">
 
               <table>
                 <thead>
-                  <tr>
-                    <th>RECORD</th>
-                    <th>TYPE</th>
-                    <th>OWNER</th>
-                    <th>STATUS</th>
-                    {isAdmin && <th>ACTION</th>}
-                  </tr>
+                <tr>
+  <th>RECORD</th>
+  <th>TYPE</th>
+  <th>OWNER</th>
+  <th>STATUS</th>
+  <th>IMPORTANCE</th>
+  <th>RISK SCORE</th>
+  {isAdmin && <th>ACTION</th>}
+</tr>
                 </thead>
 
                 <tbody>
@@ -1696,6 +1726,18 @@ export default function App() {
                           {(item.status || '').replaceAll('_', ' ')}
                         </span>
                       </td>
+
+                      <td>
+  {item.importance || 'MEDIUM'}
+</td>
+
+<td>
+  <strong>{item.riskScore ?? 0} / 100</strong>
+  <br />
+  <span>
+    {item.riskLevel || 'LOW'}
+  </span>
+</td>
 
                       {isAdmin && (
                         <td>
