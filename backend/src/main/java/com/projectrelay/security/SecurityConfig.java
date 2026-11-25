@@ -3,7 +3,6 @@ package com.projectrelay.security;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,9 +24,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-
-    @Value("${app.frontend.url:http://localhost:5173}")
-    private String frontendUrl;
 
     private final JwtAuthenticationFilter jwtFilter;
     private final AppUserDetailsService userDetailsService;
@@ -60,25 +56,27 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    // Explicit CORS configuration for the deployed frontend
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                Arrays.asList(frontendUrl.trim())
-        );
+        configuration.setAllowedOrigins(Arrays.asList(
+                "https://project-relay-eight.vercel.app",
+                "https://project-relay-83g23l7wm-sis-paradox.vercel.app",
+                "https://project-relay-git-main-sis-paradox.vercel.app"
+        ));
 
-        configuration.setAllowedMethods(
-                Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        );
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
 
         configuration.setAllowedHeaders(
                 Arrays.asList("*")
         );
 
         configuration.setAllowCredentials(false);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
